@@ -43,7 +43,8 @@
 <style lang="less">
  
     .main{
-		border:1px  solid rgb(47, 51, 54);
-		width: 600px;
+		// border:1px  solid rgb(47, 51, 54);
+        margin-top: 20px;
+		width: 700px;
 	}
 </style>

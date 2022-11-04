@@ -35,8 +35,10 @@ export default {
 <style lang="less">
     .cell{
         padding: 12px;
-        width: 100%;
+        width: 95%;
 		border:1px  solid rgb(47, 51, 54);
+        border-radius: 10px;
+        margin-bottom: 20px;
         color: var(--main-font-color);
         h3{
             font-size: 16px;
