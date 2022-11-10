@@ -39,8 +39,13 @@
 
 <style lang="less">
 	.all{
+		margin-left: 100px;
 		display: flex;
-		
+		*{
+		padding: 0;
+		margin: 0;
 	}
+	}
+	
 	
 </style>

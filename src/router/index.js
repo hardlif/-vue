@@ -4,7 +4,13 @@ import register from '@/views/register.vue'
 import article from '@/views/article.vue'
 import category from '@/views/category.vue'
 import home from '@/home.vue'
-import articleContent from '@/views/articleContent.vue';
+import articleContent from '@/views/articleContent.vue'
+import markdown from "@/components/markdown/markdownEditor.vue"
+import articleShow from '@/views/articleShow.vue'
+import test from '@/views/test.vue'
+import test2 from '@/views/test2.vue'
+
+
 
 
 
@@ -43,9 +49,26 @@ const router = createRouter({
       path:"/register",
       name:"register",
       component : register
-    },{
+    },
+    {
       path:"/articleContent",
       component : articleContent
+    },
+    {
+      path:"/markdown",
+      component : markdown
+    },
+    {
+      path:"/articleShow",
+      component : articleShow
+    },
+    {
+      path:"/test",
+      component : test
+    },
+    {
+      path:"/test2",
+      component : test2
     }
 
   ]

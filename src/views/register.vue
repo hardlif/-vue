@@ -4,12 +4,15 @@
 </template>
 <script>
 import { ref } from 'vue';
-
+//将markdown转为html页面
+import VueMarkdownEditor, { xss } from '@kangc/v-md-editor';
 export default{
     name:"register",
     setup(){
         let pageName = ref("registerPage");
-        return {pageName};
+
+        return {pageName,html};
+
     }
 }
 </script>
