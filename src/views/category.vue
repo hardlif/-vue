@@ -5,7 +5,5 @@
 </template>
 
 <style>
-    h1{
-        color: white;
-    }
+   
 </style>

@@ -1,10 +1,19 @@
 <template>
     <div class="page">
         
-        <div class="slider">
+        <el-scrollbar max-height="100vh" 
+            class="slider"
+            ref="scrollbarRef">
+            <div class="directory" v-html="directory">
 
-        </div>
-        <el-scrollbar max-height="100vh" class="articleShow">
+            </div>
+        </el-scrollbar>
+        <el-scrollbar max-height="100vh" 
+        v-loading="onloading" 
+        element-loading-text="Loading..."
+        element-loading-background="#363b40"
+        class="articleShow"
+        @scroll="scrollEvent">
             <div class="custom" v-html="content">
               
             </div>
@@ -22,75 +31,214 @@
 
 <script>
 import {useArticleStore} from "@/stores/article/articleShow/articleShow"
-import { nextTick, onMounted,onBeforeMount, ref, watch } from "vue"
+import { nextTick, onMounted,onBeforeMount, ref, watch, reactive } from "vue"
 // highlightjs
 // import hljs from 'highlight.js';
 import hljs from 'highlight.js/lib/core';
-
+//引入创建目录结构的函数
+import toToc from "@/utils/toToc"
 
   export default {
-    setup(){
+    props:['id'],
+    setup(props){
                     let articleBodyData = useArticleStore()
                     let content = ref("")
-                    
-                    onBeforeMount(async()=>{
+                    let directory = ref("")
+                    let onloading = ref(true)
+                    let heightArray = reactive([])
+                    let directoryNode = []
+                    let before = ''
+                    let directoryHight = 0
+                    const scrollbarRef = ref(null)
+                  
+                    //生成目录函数
+                    function createDirectory(){
+                        console.log("===========toc==============");
+                        // let titles = document.querySelectorAll("h1,h2,h3")
+                        // titles.forEach(element => {
+                        //     directory.push(element.outerHTML)
+                        // });
 
+                        // directory.forEach((item, index) => {
+                        //     let _toc = `<div name='toc-title' id='${index}'>${item} </div>`
+                        //     content.value = content.value.replace(item, _toc)
+                        //     })
+                        
+                        let data = content.value.match(new RegExp("<[hH][1-6].*?>.*?<\/[hH][1-6]>","g"))
+                        data.forEach((item, index) => {
+                            let _toc = `<div name='toc-title' id='${index}'>${item} </div>`
+                            content.value = content.value.replace(item, _toc)
+                            })
+                        directory.value = toToc(data)
+                        console.log("===========toc==============");
+                    }
+                    
+                    function bindDirectoryHight(){
+                        let nodeList = document.querySelectorAll("h1,h2,h3,h4,h5,h6")
+                        directoryNode = document.querySelectorAll(".slider  li")
+                        before = directoryNode[0]
+                        before.className = "active"
+                        directoryHight = document.querySelector(".directory").offsetHeight
+                        nodeList.forEach(element => {
+                            heightArray.push(element.offsetTop)
+                        });
+                    }
+                    function scrollEvent(data) {
+                        
+                            useDirectory(data)
+                       
+                    }
+                    function useDirectory(data){
+                            let index = findIndex(0,directoryNode.length,data.scrollTop+200) - 1;
+                        index = index < 0 ? 0 : index;
+                        // console.log("对应的索引为",index);
+                        // console.log("对应的节点为",directoryNode[index]);
+                        before.className = ""
+                        directoryNode[index].className = "active"
+                        if (directoryNode[index].offsetTop >= 267 ) {
+                            if (directoryHight 
+                        - directoryNode[index].offsetTop - directoryNode[index].offsetHeight
+                        > 320) {
+                            scrollbarRef.value.setScrollTop(directoryNode[index].offsetTop-267)
+                                
+                            } else {
+                            scrollbarRef.value.setScrollTop(directoryHight-document.body.offsetHeight+20)
+                            }
+                        }
+                        before = directoryNode[index]
+                        
+                        
+                    }
+
+                    function findIndex(left,right,scrollTop){
+                            if(right - left == 0)
+                             return left;
+                            if (scrollTop<=heightArray[Math.floor(left+(right-left)/2)]) 
+                               return findIndex(left,Math.floor(left+(right-left)/2),scrollTop);
+                            else 
+                                return findIndex(Math.floor(left+(right-left)/2)+1,right,scrollTop);
+                    }
+                    onBeforeMount(()=>{
                     })
                     onMounted(async()=>{
                         console.log("挂载成功");
-                        content.value = await articleBodyData.getArticleBody()
+                        console.log("获取的参数为",props.id);
+                        console.log(articleBodyData);
+                        content.value = await articleBodyData.getArticleBody(props.id)
+                        createDirectory();
                         nextTick(()=> {
-                        console.log("===========code=============");
-                        console.log(document.querySelectorAll("pre code"));
-                        console.log("===========code=============");
+                        bindDirectoryHight();
                         hljs.highlightAll();
+                        onloading.value = false
                             })
 
                     })
                     watch(content,(a)=>{
                         // nextTick()
-                      
                     })
                     return{
-                        content
+                        content,
+                        onloading,
+                        directory,
+                        useDirectory,
+                        heightArray,
+                        scrollbarRef,
+                        scrollEvent
                     }
-    },
-    mounted(){
-        // console.log(this.$hljs);
-        // this.content = this.$hljs.highlightAuto(this.conntent).value;
-        
     }
   }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
-    .slider{
+    :deep(.slider){
         width: 19%;
         background-color: #2e3033;
+        .directory{
+            ul{
+                padding: 0;
+            }
+            li{
+                padding: 3px 0;
+                &:hover{
+                    background-color: #3d3c44;
+                }
+             
+                &[data-level="2"]{
+                    color: red;
+                    padding-left: 20px;
+                }
+                &[data-level="3"]{
+                    color: red;
+                    padding-left: 30px;
+                }
+                &[data-level="4"]{
+                    color: red;
+                    padding-left: 40px;
+                }
+                &[data-level="5"]{
+                    color: red;
+                    padding-left: 50px;
+                }
+                &[data-level="6"]{
+                    color: red;
+                    padding-left: 60px;
+                }
+                &.active{
+                    a{
+                        color: white;
+                        font-weight: bolder;
+                    }
+                }
+            }
+            a{
+                color: #b8bfc6;
+                word-wrap:break-word;
+                font-size: 12px;
+                &:hover{
+                    color: white;
+                    border-bottom: 1px white solid;
+                }
+                
+            }
+
+        }
     }
     .page{
         display: flex;
         width: 100%;
         height: 100vh;
         background-color: #363b40;
+    
     }
-    h1,h2,h3,h4,h5,h6{ 
-        color: #dedede;
-    }
-    // h1{
-    //     margin: 14px 0;
-    // }
-    // h2{
-    //     margin: 14px 0;
-    // }
-    p{
-        color: #b8bfc6;
-       
-    }
-    .articleShow{
+ 
+
+    :deep(.articleShow){
         flex: 1;
         // padding: 0 11%;
+        h1,h2,h3,h4,h5,h6{ 
+        color: #dedede;
+        }
+
+        //设置图标颜色
+        .el-loading-spinner .path{
+        stroke: #dedede;
+        }
+
+        //设置文字颜色
+        .el-loading-spinner .el-loading-text{
+        color: #dedede;
+        }
+        //设置关键字颜色
+        code{
+            background-color: #33383d;
+            padding: 0 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        p{
+            color: #b8bfc6;
+        }
         .custom{
             width: 100%;
             padding: 0 11%;
@@ -123,12 +271,7 @@ import hljs from 'highlight.js/lib/core';
         color: #9da2a6;
     }
        
-    }
-
-    //高亮代码块
-    /* 语法高亮 */
-
-.hljs-container {
+    .hljs-container {
     margin: 10px 0;
     border-radius: 8px;
     position: relative;
@@ -206,6 +349,13 @@ import hljs from 'highlight.js/lib/core';
 ::-webkit-scrollbar-button {
     display: none;
 }
+
+}
+
+    //高亮代码块
+    /* 语法高亮 */
+
+
 
 
 </style>

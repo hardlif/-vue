@@ -9,6 +9,7 @@ import markdown from "@/components/markdown/markdownEditor.vue"
 import articleShow from '@/views/articleShow.vue'
 import test from '@/views/test.vue'
 import test2 from '@/views/test2.vue'
+import test3 from '@/views/test/testScopeStyle.vue'
 
 
 
@@ -17,6 +18,7 @@ import test2 from '@/views/test2.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+
     {
       path: '/',
       name: 'home',
@@ -59,7 +61,8 @@ const router = createRouter({
       component : markdown
     },
     {
-      path:"/articleShow",
+      path:"/article/:id",
+      props:true,
       component : articleShow
     },
     {
@@ -69,6 +72,9 @@ const router = createRouter({
     {
       path:"/test2",
       component : test2
+    },{
+      path:"/testScope",
+      component : test3
     }
 
   ]
